@@ -24,7 +24,9 @@ public class Etudiant {
     private String adresse;
     private Number telephone;
     private String section;
-    private String ecole;
+    private String classe;
+    private String resultat;
+
 
 
 }

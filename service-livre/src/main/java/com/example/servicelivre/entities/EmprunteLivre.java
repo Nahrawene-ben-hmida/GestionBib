@@ -15,9 +15,7 @@ public class EmprunteLivre {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Date date_emprunte;
-    private Date date_retour;
     private Long idEtudiant;
-    private Boolean isreturned = false ;
 
     @ManyToOne
     private Livre refLivre;

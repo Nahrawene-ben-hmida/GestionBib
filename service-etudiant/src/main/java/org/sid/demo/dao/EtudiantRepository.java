@@ -11,8 +11,11 @@ import java.util.List;
 @RepositoryRestResource
 public interface EtudiantRepository extends JpaRepository<Etudiant,Long> {
 
+    @Query("Select count(e) from Etudiant e where e.resultat= ?1 ")
+    long countEtudiantsByResultat(String resultat);
 
     @Query("Select count(e) from Etudiant e")
     long countAllEtudiants();
 
+    long countAllByResultatNotNull();
 }

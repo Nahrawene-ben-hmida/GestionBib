@@ -1,0 +1,103 @@
+version: '3'
+services: 
+  discovery:
+    image: target/service-register-docker
+    ports:
+      - 8761:8761
+  config:
+    image: target/service-config-docker
+    volumes:
+      - ./config-data:/var/config-data
+    environment: 
+      - JAVA_OPTS=
+      - DEUREKA_SERVER=http://discovery:8761/eureka
+      - Dspring.cloud.config.server.git.uri=https://github.com/Nahrawene-ben-hmida/cloud-conf-soa.git
+    depends_on:
+      - discovery
+    ports:
+      - 8888:8888
+  service-proxy:
+    image: target/service-zuul-docker
+    environment:
+      - JAVA_OPTS=
+      - DEUREKA_SERVER=http://discovery:8761/eureka
+      - eureka.client.serviceUrl.defaultZone=http://discovery:8761/eureka/
+      - discovery
+      - config
+    restart: on-failure
+    ports:
+      - 8079:8079
+    depends_on: 
+      - discovery
+      - config
+    links:
+      - discovery
+  service-cadres-admin:
+    image: target/service-cadre-admin-docker
+    environment:
+      - JAVA_OPTS=
+      - DEUREKA_SERVER=http://discovery:8761/eureka
+      - eureka.client.serviceUrl.defaultZone=http://discovery:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/service_cadres_admin?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    depends_on:
+      - discovery
+      - config
+      - db
+    links:
+      - discovery
+      
+  service-etudiant:
+    image: target/service-etudiant-docker
+    environment:
+      - JAVA_OPTS=
+      - DEUREKA_SERVER=http://discovery:8761/eureka
+      - eureka.client.serviceUrl.defaultZone=http://discovery:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/service_etudiant?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    depends_on:
+      - discovery
+      - config
+      - db
+    links:
+      - discovery
+  service-livre:
+    image: target/service-livre-docker
+    environment:
+      - JAVA_OPTS=
+      - DEUREKA_SERVER=http://discovery:8761/eureka
+      - eureka.client.serviceUrl.defaultZone=http://discovery:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/service_Livre?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+
+    depends_on:
+      - discovery
+      - config
+      - db
+    links:
+      - discovery
+  db:
+    image: mysql:5.7
+    container_name: db
+    ports: 
+      - 3306:3306
+    environment: 
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+    volumes : 
+      - ./initsql/:/docker-entrypoint-initdb.d/
+  front:
+    image: frontsoa:lastest
+    ports:
+      - 4200:80
+    links:
+      - service-proxy
+
+    
